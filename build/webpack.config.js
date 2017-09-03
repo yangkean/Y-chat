@@ -1,38 +1,70 @@
-var path = require('path')
-var webpack = require('webpack')
+const path = require('path')
+const webpack = require('webpack')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const CleanWebpackPlugin = require('clean-webpack-plugin')
 
 module.exports = {
-  entry: './src/main.js',
+  entry: {
+    app: './src/main.js'
+  },
   output: {
     path: path.resolve(__dirname, '../dist'),
-    publicPath: './dist/',
-    filename: 'build.js'
+    publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
+    filename: '[name].build.js'
   },
   module: {
     rules: [
       {
         test: /\.vue$/,
-        loader: 'vue-loader'
+        use: [
+          'vue-loader'
+        ]
       },
       {
         test: /\.js$/,
-        loader: 'babel-loader',
-        exclude: /node_modules/
+        exclude: [
+          path.resolve(__dirname, '../node_modules')
+        ],
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['env']
+          }
+        }
       },
       {
         test: /\.css$/,
-        loader: 'style-loader!css-loader'
+        use: [
+          'style-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              minimize: true
+            }
+          }
+        ]
       },
       {
-        test: /\.(eot|svg|ttf|woff|woff2)(\?\S*)?$/,
-        loader: 'file-loader'
+        test: /\.(woff|woff2|eot|ttf|otf)$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[hash].[ext]'
+            }  
+          }
+        ]
       },
       {
-        test: /\.(png|jpg|gif|svg)$/,
-        loader: 'file-loader',
-        options: {
-          name: '[name].[ext]?[hash]'
-        }
+        test: /\.(png|svg|jpg|gif)$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[hash].[ext]'
+            }  
+          }
+        ]
       }
     ]
   },
@@ -43,32 +75,37 @@ module.exports = {
     extensions: ['.js', '.vue', '.css']
   },
   devServer: {
+    contentBase: path.resolve(__dirname, '../dist/'),
     historyApiFallback: true,
-    noInfo: true
+    noInfo: true,
+    hot: true,
   },
   performance: {
     hints: false
   },
-  devtool: '#eval-source-map'
+  devtool: process.env.NODE_ENV === 'production' ? 'cheap-module-source-map' : 'cheap-module-eval-source-map',
+  plugins: [
+    new CleanWebpackPlugin(['../dist']),
+    new HtmlWebpackPlugin({
+      title: 'y-chat',
+      filename: 'index.html',
+      chunks: ['app'],
+      template: 'index.html'
+    })
+  ]
 }
 
 if (process.env.NODE_ENV === 'production') {
-  module.exports.devtool = '#source-map'
-  // http://vue-loader.vuejs.org/en/workflow/production.html
   module.exports.plugins = (module.exports.plugins || []).concat([
     new webpack.DefinePlugin({
-      'process.env': {
-        NODE_ENV: '"production"'
-      }
+      'process.env.NODE_ENV': JSON.stringify('production')      
     }),
-    new webpack.optimize.UglifyJsPlugin({
-      sourceMap: true,
-      compress: {
-        warnings: false
-      }
-    }),
-    new webpack.LoaderOptionsPlugin({
-      minimize: true
-    })
+    new webpack.optimize.UglifyJsPlugin(),
+    new webpack.HashedModuleIdsPlugin()
+  ])
+} else {
+  module.exports.plugins = (module.exports.plugins || []).concat([
+    new webpack.HotModuleReplacementPlugin(),
+    new webpack.NamedModulesPlugin()
   ])
 }

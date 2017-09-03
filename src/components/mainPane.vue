@@ -1,5 +1,10 @@
 <template>
   <el-col :span="18" class="main-pane">
+    <el-row class="tac member-box">
+      <el-col :span="18">
+        <p class="member-name">{{ memberName }}<i class="el-icon-arrow-down el-icon--right"></i></p>
+      </el-col>
+    </el-row>
     <div class="content">
       <p v-for="n in 20" :key="n">{{ n }}</p>
     </div>
@@ -17,6 +22,11 @@
 <script>
 export default {
   name: 'main-pane',
+  computed: {
+    memberName () {
+      return this.$route.params.name || 'Sam Yang'
+    }
+  },
   data () {
     return {
       input: ''
@@ -33,7 +43,23 @@ export default {
   background-size: cover;
   overflow: auto;
 }
+.member-box {
+  width: 100%;
+  position: fixed;
+  top: 0;
+}
+.member-name {
+  line-height: 40px;
+  font-size: 1.2em;
+  margin: 0;
+  text-align: center;
+  color: #48576a; 
+}
+.member-name i {
+  cursor: pointer;
+}
 .content {
+  padding-top: 40px;
   padding-bottom: 50px;
 }
 .input-bar {

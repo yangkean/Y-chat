@@ -18,10 +18,21 @@
 export default {
   methods: {
     redirect () {
-      // TODO
-      // fetch(url, name, pwd).then()
-      // 验证信息后跳转
-      location.href = `${location.href}home`
+      const fd = new FormData();
+      fd.append('username', this.form.name);
+      fd.append('pwd', this.form.pwd);
+
+      fetch('http://localhost:3000/', {
+        method: 'POST',
+        body: fd,
+        //mode: 'cors'
+      })
+      .then((res) => {
+        return res.blob();
+      })
+      .then((data) => {
+        console.log(data);
+      });
     }
   },
   data () {

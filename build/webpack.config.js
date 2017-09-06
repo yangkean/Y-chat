@@ -10,7 +10,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, '../dist'),
     publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
-    filename: '[name].build.js'
+    filename: process.env.NODE_ENV === 'production' ? '[name].build.js' : 'public/[name].build.js'
   },
   module: {
     rules: [
@@ -50,7 +50,7 @@ module.exports = {
           {
             loader: 'file-loader',
             options: {
-              name: '[hash].[ext]'
+              name: process.env.NODE_ENV === 'production' ? '[hash].[ext]' : 'public/[hash].[ext]'
             }  
           }
         ]
@@ -61,7 +61,7 @@ module.exports = {
           {
             loader: 'file-loader',
             options: {
-              name: '[hash].[ext]'
+              name: process.env.NODE_ENV === 'production' ? '[hash].[ext]' : 'public/[hash].[ext]'
             }  
           }
         ]
@@ -85,10 +85,9 @@ module.exports = {
   },
   devtool: process.env.NODE_ENV === 'production' ? 'cheap-module-source-map' : 'cheap-module-eval-source-map',
   plugins: [
-    new CleanWebpackPlugin(['../dist']),
     new HtmlWebpackPlugin({
       title: 'y-chat',
-      filename: 'index.html',
+      filename: 'views/index.html',
       chunks: ['app'],
       template: 'index.html'
     })
@@ -96,7 +95,11 @@ module.exports = {
 }
 
 if (process.env.NODE_ENV === 'production') {
+  console.log(process.cwd())
   module.exports.plugins = (module.exports.plugins || []).concat([
+    new CleanWebpackPlugin('dist', {
+      root: process.cwd()
+    }),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('production')      
     }),

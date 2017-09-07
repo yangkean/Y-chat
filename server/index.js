@@ -1,6 +1,6 @@
 const Koa = require('koa');
 const Router = require('koa-router');
-const koaBody = require('koa-body');
+const koaBody = require('koa-body')({multipart:true}); // enable parse multipart bodies
 const path = require('path');
 const serve = require('koa-static');
 const views = require('koa-views');
@@ -16,9 +16,9 @@ const client = redis.createClient();
 const hget = promisify(client.hget).bind(client);
 const hset = promisify(client.hset).bind(client);
 
-app.use(koaBody());
-
-app.use(cors());
+app.use(cors({
+  credentials: true
+}));
 
 app.use(serve(path.join(__dirname, '../dist')));
 
@@ -27,7 +27,8 @@ app.use(views(path.join(__dirname, '../dist/views'), {
 }));
 
 router.get('/', index)
-      .post('/', signin);
+      .post('/', koaBody, signin)
+      .get('/home', home);
 
 app.use(router.routes());
 
@@ -36,28 +37,36 @@ async function index(ctx) {
 }
 
 async function signin(ctx) {
-  //console.log(ctx.request)
-  const username = ctx.request.body.username.trim();
-  const pwd = ctx.request.body.pwd.trim();
+  const username = ctx.request.body.fields.username.trim();
+  const pwd = ctx.request.body.fields.pwd.trim();
 
   const user = await hget('y-chat:user', username);
 
   if(user) {
     const redisPwd = JSON.parse(user).pwd;
 
-    ctx.cookies.set('user', `${username}:${pwd}`, {
-      maxAge: 2592000,
+    if(redisPwd !== pwd) {
+      return ctx.body = '密码不正确';
+    }
+  } else {
+    const value = JSON.stringify({
+      username: username,
+      pwd: pwd 
     });
 
-    if(redisPwd !== pwd) {
-      await hset('y-chat:user', username, {
-        username: username,
-        pwd: pwd 
-      });
-    }
-
-    ctx.redirect('/home');
+    await hset('y-chat:user', username, value);
   }
+
+  ctx.cookies.set('user', `${username}:${pwd}`, {
+    maxAge: 2592000,
+    domain: 'localhost'
+  });
+
+  ctx.redirect('/home')
+}
+
+async function home(ctx) {
+  await ctx.render('index');
 }
 
 app.listen(config.server.port, () => {

@@ -25,13 +25,15 @@ export default {
       fetch('http://localhost:3000/', {
         method: 'POST',
         body: fd,
-        //mode: 'cors'
+        credentials: 'include', // allow sending cookies to other domains
       })
       .then((res) => {
-        return res.blob();
+        return res.text();
       })
       .then((data) => {
         console.log(data);
+
+        //location.replace(`${location.pathname}#/home`)
       });
     }
   },

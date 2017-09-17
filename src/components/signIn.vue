@@ -9,15 +9,17 @@
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="redirect">确 定</el-button>
+      <el-button type="primary" @click="check">确 定</el-button>
     </div>
   </el-dialog>
 </template>
 
 <script>
+import { Message } from 'element-ui'
+
 export default {
   methods: {
-    redirect () {
+    check () {
       const fd = new FormData();
       fd.append('username', this.form.name);
       fd.append('pwd', this.form.pwd);
@@ -28,14 +30,29 @@ export default {
         credentials: 'include', // allow sending cookies to other domains
       })
       .then((res) => {
-        return res.text();
+        return res.json();
       })
       .then((data) => {
-        console.log(data);
+        
+        if(data.login === 'success') {
+          const self = this;
 
-        //location.replace(`${location.pathname}#/home`)
+          Message({
+            message: data.msg,
+            type: 'success',
+            duration: 2000,
+            onClose () {
+              self.$router.push('/home'); // redirect to homepage
+            },
+          });
+        } else {
+          Message({
+            message: data.msg,
+            type: 'warning'
+          });
+        }
       });
-    }
+    },
   },
   data () {
     return {

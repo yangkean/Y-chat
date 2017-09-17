@@ -6,18 +6,18 @@
       </el-col>
     </el-row>
     <div class="content">
-      <dialog-box v-for="n in 1" :key="n" :message="msg" :type="'left'"></dialog-box>
+      <!-- <dialog-box v-for="n in 1" :key="n" :message="msg" :type="'left'"></dialog-box>
       <dialog-box v-for="n in 1" :key="n" :message="msg" :type="'right'"></dialog-box>
       <dialog-box v-for="n in 1" :key="n" :message="msg" :type="'left'"></dialog-box>
-      <dialog-box v-for="n in 1" :key="n" :message="msg" :type="'right'"></dialog-box>
+      <dialog-box v-for="n in 1" :key="n" :message="msg" :type="'right'"></dialog-box> -->
     </div>
     <div class="placeholder"></div>
     <el-row class="tac input-bar">
       <el-col :span="16">
-        <el-input v-model="input" placeholder="请输入聊天内容"></el-input>
+        <el-input v-model.trim="input" placeholder="请输入聊天内容"></el-input>
       </el-col>
       <el-col :span="2">
-        <el-button type="primary" class="send-btn">发送</el-button>
+        <el-button type="primary" class="send-btn" @click="send">发送</el-button>
       </el-col>
     </el-row>
   </el-col>
@@ -25,6 +25,8 @@
 
 <script>
 import dialogBox from './dialogBox'
+import io from 'socket.io-client'
+import { Message } from 'element-ui'
 
 export default {
   name: 'main-pane',
@@ -39,10 +41,32 @@ export default {
   data () {
     return {
       input: '',
-      msg: '你好啊你好啊你好啊你好啊你好啊你好啊你好啊你好啊你好啊你好啊你好啊你好啊你好啊你好啊你好啊你好啊你好啊',
-      type: 'right',
+      msg: '',
+      type: '',
     }
-  }
+  },
+  methods: {
+    send () {
+      const socket = io();
+      const content = document.querySelector('.content');
+
+      if(this.input) {
+        // need to dynamically add components
+        const dialog = document.createElement('dialog-box');
+        dialog.setAttribute('message', this.input);
+        dialog.setAttribute('type', 'right');
+
+        content.appendChild(dialog);
+
+        socket.emit('chat message', this.input);
+      } else {
+        Message({
+          message: '你没有输入聊天信息哦',
+          type: 'warning'
+        });
+      }
+    },
+  },
 }
 </script>
 

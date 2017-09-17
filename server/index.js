@@ -11,10 +11,15 @@ const config = require('../config/index');
 const app = new Koa();
 const router = new Router();
 const client = redis.createClient();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
 
 // promisify redis method
 const hget = promisify(client.hget).bind(client);
 const hset = promisify(client.hset).bind(client);
+
+// number of connected users
+let numUsers = 0;
 
 app.use(cors({
   credentials: true
@@ -46,7 +51,10 @@ async function signin(ctx) {
     const redisPwd = JSON.parse(user).pwd;
 
     if(redisPwd !== pwd) {
-      return ctx.body = '密码不正确';
+      return ctx.body = JSON.stringify({
+        login: 'fail',
+        msg: '密码不正确'
+      });
     }
   } else {
     const value = JSON.stringify({
@@ -62,12 +70,36 @@ async function signin(ctx) {
     domain: 'localhost'
   });
 
-  ctx.redirect('/home')
+  ctx.body = JSON.stringify({
+    login: 'success',
+    msg: '登录成功'
+  });
 }
 
 async function home(ctx) {
   await ctx.render('index');
 }
+
+// socket.io server side
+io.on('connection', (socket) => {
+  numUsers++;
+
+  console.log(`${numUsers} is connected...`);
+
+  socket.on('chat message', (msg) => {
+    console.log(msg)
+    // io.emit('chat message', {
+    //   username: socket.username,
+    //   msg: msg
+    // });
+  });
+
+  socket.on('disconnect', () => {
+    numUsers--;
+
+    console.log(`${numUsers} is connected...`);
+  });
+});
 
 app.listen(config.server.port, () => {
   console.log(`server is listening on port http://localhost:${config.server.port}`);

@@ -6,10 +6,7 @@
       </el-col>
     </el-row>
     <div class="content">
-      <!-- <dialog-box v-for="n in 1" :key="n" :message="msg" :type="'left'"></dialog-box>
-      <dialog-box v-for="n in 1" :key="n" :message="msg" :type="'right'"></dialog-box>
-      <dialog-box v-for="n in 1" :key="n" :message="msg" :type="'left'"></dialog-box>
-      <dialog-box v-for="n in 1" :key="n" :message="msg" :type="'right'"></dialog-box> -->
+      <dialog-box v-for="n in boxCount" :key="n" :message="msg[n - 1]" :type="'right'"></dialog-box>
     </div>
     <div class="placeholder"></div>
     <el-row class="tac input-bar">
@@ -27,6 +24,7 @@
 import dialogBox from './dialogBox'
 import io from 'socket.io-client'
 import { Message } from 'element-ui'
+import config from '../../config/'
 
 export default {
   name: 'main-pane',
@@ -41,24 +39,23 @@ export default {
   data () {
     return {
       input: '',
-      msg: '',
+      msg: [],
       type: '',
+      boxCount: 0,
     }
   },
   methods: {
     send () {
-      const socket = io();
+      const socket = io(`http://localhost:${config.server.port}/`);
       const content = document.querySelector('.content');
 
       if(this.input) {
-        // need to dynamically add components
-        const dialog = document.createElement('dialog-box');
-        dialog.setAttribute('message', this.input);
-        dialog.setAttribute('type', 'right');
-
-        content.appendChild(dialog);
+        this.boxCount++;
+        this.msg.push(this.input);
 
         socket.emit('chat message', this.input);
+
+        this.input = '';
       } else {
         Message({
           message: '你没有输入聊天信息哦',

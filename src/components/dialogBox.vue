@@ -31,11 +31,11 @@ export default {
 .left {
   background-color: #F9FAFC;
   float: left;
-  clear: right;
+  clear: both;
 }
 .right {
   background-color: #35BD27;
   float: right;
-  clear: left;
+  clear: both;
 }
 </style>

@@ -2,10 +2,10 @@
   <el-dialog title="登录" :visible.sync="dialogFormVisible" :show-close="showClose">
     <el-form :model="form" class="form">
       <el-form-item label="用户名" :label-width="formLabelWidth">
-        <el-input v-model="form.name" auto-complete="off"></el-input>
+        <el-input v-model.trim="form.name" auto-complete="off"></el-input>
       </el-form-item>
       <el-form-item label="密码" :label-width="formLabelWidth">
-        <el-input v-model="form.pwd" auto-complete="off"></el-input>
+        <el-input v-model.trim="form.pwd" auto-complete="off"></el-input>
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
@@ -16,6 +16,7 @@
 
 <script>
 import { Message } from 'element-ui'
+import config from '../../config/'
 
 export default {
   methods: {
@@ -24,7 +25,7 @@ export default {
       fd.append('username', this.form.name);
       fd.append('pwd', this.form.pwd);
 
-      fetch('http://localhost:3000/', {
+      fetch(`http://localhost:${config.server.port}/`, {
         method: 'POST',
         body: fd,
         credentials: 'include', // allow sending cookies to other domains

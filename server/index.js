@@ -11,8 +11,8 @@ const config = require('../config/index');
 const app = new Koa();
 const router = new Router();
 const client = redis.createClient();
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
+const server = require('http').createServer(app.callback());
+const io = require('socket.io')(server);
 
 // promisify redis method
 const hget = promisify(client.hget).bind(client);
@@ -42,8 +42,8 @@ async function index(ctx) {
 }
 
 async function signin(ctx) {
-  const username = ctx.request.body.fields.username.trim();
-  const pwd = ctx.request.body.fields.pwd.trim();
+  const username = ctx.request.body.fields.username;
+  const pwd = ctx.request.body.fields.pwd;
 
   const user = await hget('y-chat:user', username);
 
@@ -56,13 +56,18 @@ async function signin(ctx) {
         msg: '密码不正确'
       });
     }
-  } else {
+  } else if(username && pwd) {
     const value = JSON.stringify({
       username: username,
       pwd: pwd 
     });
 
     await hset('y-chat:user', username, value);
+  } else {
+    return ctx.body = JSON.stringify({
+      login: 'fail',
+      msg: '请输入用户名或密码  '
+    });
   }
 
   ctx.cookies.set('user', `${username}:${pwd}`, {
@@ -82,12 +87,10 @@ async function home(ctx) {
 
 // socket.io server side
 io.on('connection', (socket) => {
-  numUsers++;
-
-  console.log(`${numUsers} is connected...`);
+  console.log(`${io.engine.clientsCount} sockets connected...`);
 
   socket.on('chat message', (msg) => {
-    console.log(msg)
+    console.log(`${socket.id}: ${msg}`)
     // io.emit('chat message', {
     //   username: socket.username,
     //   msg: msg
@@ -95,12 +98,10 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    numUsers--;
-
-    console.log(`${numUsers} is connected...`);
+    console.log(`disconnected: ${socket.id}`);
   });
 });
 
-app.listen(config.server.port, () => {
+server.listen(config.server.port, () => {
   console.log(`server is listening on port http://localhost:${config.server.port}`);
 });

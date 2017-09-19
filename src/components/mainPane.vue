@@ -26,6 +26,12 @@ import io from 'socket.io-client'
 import { Message } from 'element-ui'
 import config from '../../config/'
 
+const socket = io(`http://localhost:${config.server.port}/`);
+
+socket.on('chat message', (data) => {
+  // todo
+});
+
 export default {
   name: 'main-pane',
   components: {
@@ -46,9 +52,6 @@ export default {
   },
   methods: {
     send () {
-      const socket = io(`http://localhost:${config.server.port}/`);
-      const content = document.querySelector('.content');
-
       if(this.input) {
         this.boxCount++;
         this.msg.push(this.input);

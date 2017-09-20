@@ -5,10 +5,14 @@ module.exports = function(io) {
     socket.on('chat message', (msg) => {
       console.log(`${socket.id}: ${msg}`);
       
-      io.emit('chat message', {
+      socket.broadcast.emit('chat message', {
         username: socket.username,
         msg: msg
       });
+    });
+
+    socket.on('user login', (user) => {
+      socket.username = user;
     });
 
     socket.on('disconnect', () => {

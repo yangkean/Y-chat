@@ -17,6 +17,9 @@
 <script>
 import { Message } from 'element-ui'
 import config from '../../config/'
+import io from 'socket.io-client'
+
+const socket = io(`http://localhost:${config.server.port}/`)
 
 export default {
   methods: {
@@ -43,6 +46,8 @@ export default {
             type: 'success',
             duration: 2000,
             onClose () {
+              self.emit('user login', self.form.name);
+
               self.$router.push('/home'); // redirect to homepage
             },
           });

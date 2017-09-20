@@ -6,9 +6,8 @@
       </el-col>
     </el-row>
     <div class="content">
-      <dialog-box v-for="n in boxCount" :key="n" :message="msg[n - 1]" :type="'right'"></dialog-box>
+      <dialog-box v-for="(value, index) in msg" :key="index" :message="value.message" :type="value.type"></dialog-box>
     </div>
-    <div class="placeholder"></div>
     <el-row class="tac input-bar">
       <el-col :span="16">
         <el-input v-model.trim="input" placeholder="请输入聊天内容"></el-input>
@@ -26,11 +25,7 @@ import io from 'socket.io-client'
 import { Message } from 'element-ui'
 import config from '../../config/'
 
-const socket = io(`http://localhost:${config.server.port}/`);
-
-socket.on('chat message', (data) => {
-  // todo
-});
+const socket = io(`http://localhost:${config.server.port}/`)
 
 export default {
   name: 'main-pane',
@@ -39,7 +34,7 @@ export default {
   },
   computed: {
     memberName () {
-      return this.$route.params.name || 'Sam Yang'
+      return this.$route.params.name || JSON.parse(decodeURI(document.cookie).match(/(?:^| )userInfo=(.*?)(?:;|$)/)[1]).username
     }
   },
   data () {
@@ -54,7 +49,10 @@ export default {
     send () {
       if(this.input) {
         this.boxCount++;
-        this.msg.push(this.input);
+        this.msg.push({
+          message: this.input,
+          type: 'right'
+        });
 
         socket.emit('chat message', this.input);
 
@@ -66,6 +64,14 @@ export default {
         });
       }
     },
+  },
+  mounted () {
+    socket.on('chat message', (data) => {
+      this.msg.push({
+        message: data.msg,
+        type: 'left'
+      })
+    })
   },
 }
 </script>
@@ -95,11 +101,6 @@ export default {
 }
 .content {
   padding: 40px 25px 50px;
-}
-.placeholder {
-  width: 100%;
-  height: 36px;
-  float: left;
 }
 .input-bar {
   width: 100%;

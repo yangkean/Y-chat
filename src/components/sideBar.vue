@@ -1,9 +1,12 @@
 <template>
   <el-col :span="6" class="sidebar">
-    <el-menu default-active="2" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose" theme="dark">
-      <el-submenu :index="index + ''" v-for="(group, index) in groupNameList" :key="group.id">
-        <template slot="title">{{ group.name }}</template>
-        <el-menu-item :index="`${index}-${subindex}`" v-for="(member, subindex) in group.members" :key="subindex">
+    <div class="self-info">
+      {{ selfName }}
+    </div>
+    <el-menu default-active="2" @open="handleOpen" @close="handleClose" theme="dark">
+      <el-submenu :index="index + ''" v-for="(group, key, index) in groups" :key="key">
+        <template slot="title">{{ key }}</template>
+        <el-menu-item :index="`${index}-${subindex}`" v-for="(member, subindex) in group" :key="subindex">
           <router-link :to="`/member/${member}`">{{ member }}</router-link>
         </el-menu-item>
       </el-submenu>
@@ -16,28 +19,8 @@ export default {
   name: 'side-bar',
   data () {
     return {
-      groupNameList: [
-        {
-          name: '家庭',
-          id: 'home',
-          members: ['小明', '小红', '小刚']
-        },
-        {
-          name: '朋友',
-          id: 'friend',
-          members: ['小明', '小红', '小刚']
-        },
-        {
-          name: '同事',
-          id: 'olleague',
-          members: ['小明', '小红', '小刚']
-        },
-        {
-          name: '同学',
-          id: 'classmate',
-          members: ['小明', '小红', '小刚']
-        },
-      ]
+      groups: JSON.parse(decodeURI(document.cookie).match(/(?:^| )userInfo=(.*?)(?:;|$)/)[1]).groups,
+      selfName: JSON.parse(decodeURI(document.cookie).match(/(?:^| )userInfo=(.*?)(?:;|$)/)[1]).username,
     }
   },
   methods: {
@@ -60,5 +43,12 @@ export default {
 .sidebar a {
   color: #bfcbd9;
   text-decoration: none;
+}
+.self-info {
+  font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+  font-size: 18px;
+  text-align: center;
+  line-height: 40px;
+  background-color: #E1E4E4;
 }
 </style>

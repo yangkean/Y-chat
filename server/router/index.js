@@ -42,13 +42,30 @@ async function signin(ctx) {
   } else {
     return ctx.body = JSON.stringify({
       login: 'fail',
-      msg: '请输入用户名或密码  '
+      msg: '请输入用户名或密码'
     });
   }
 
   ctx.cookies.set('user', `${username}:${pwd}`, {
     maxAge: 2592000,
-    domain: 'localhost'
+    domain: 'localhost',
+  });
+
+  // HTTP 头部字段在 RFC 7230 sec 3.2 有限制，需把中文转义为 Unicode 字符
+  const userInfo = encodeURI(JSON.stringify({
+    username,
+    groups: {
+      family: ['小红', '小明', '小刚'],
+      friend: ['sam', 'tom'],
+      colleague: ['二狗子', '呆瓜'],
+      classmate: ['上天', '入地']
+    }
+  }));
+
+  ctx.cookies.set('userInfo', userInfo, {
+    maxAge: 2592000,
+    domain: 'localhost',
+    httpOnly: false,
   });
 
   ctx.body = JSON.stringify({

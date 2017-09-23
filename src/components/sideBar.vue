@@ -3,6 +3,9 @@
     <div class="self-info">
       {{ selfName }}
     </div>
+    <div class="playground">
+      <router-link :to="'/playground'">playground</router-link>
+    </div>
     <el-menu default-active="2" @open="handleOpen" @close="handleClose" theme="dark">
       <el-submenu :index="index + ''" v-for="(group, key, index) in groups" :key="key">
         <template slot="title">{{ key }}</template>
@@ -44,11 +47,17 @@ export default {
   color: #bfcbd9;
   text-decoration: none;
 }
-.self-info {
+.self-info,
+.playground {
   font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
   font-size: 18px;
   text-align: center;
   line-height: 40px;
   background-color: #E1E4E4;
+}
+.playground {
+  background-color: #4b5f81;
+  color: #fff;
+  cursor: pointer;
 }
 </style>

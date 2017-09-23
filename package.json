@@ -5,7 +5,7 @@
   "author": "杨少 <samyangcoder@gmail.com>",
   "private": true,
   "scripts": {
-    "dev": "cross-env NODE_ENV=development webpack-dev-server --open --open-page 'views/' --config ./build/webpack.config.js",
+    "dev": "cross-env NODE_ENV=development webpack-dev-server --port 8081 --open --open-page 'views/' --config ./build/webpack.config.js",
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules --config ./build/webpack.config.js"
   },
   "dependencies": {

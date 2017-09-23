@@ -1,11 +1,16 @@
 <template>
-  <div class="message" :class="classObj">{{ message }}</div>
+  <div>
+    <div class="message" :class="classObj">
+      <span v-if="isDisplay" class="nickname">{{ username }}</span>
+      {{ message }}
+    </div>
+  </div>
 </template>
 
 <script>
 export default {
   name: 'dialog-box',
-  props: ['message', 'type'],
+  props: ['message', 'type', 'username', 'isPlayground'],
   computed: {
     classObj () {
       return {
@@ -13,6 +18,9 @@ export default {
         right: this.type === 'right',
       }
     },
+    isDisplay () {
+      return this.isPlayground && this.username
+    }
   }
 }
 </script>
@@ -26,7 +34,16 @@ export default {
   border: 1px solid #D3DCE6;
   padding: 10px;
   border-radius: 5px;
-  margin: 10px 0;
+  margin: 15px 0;
+  position: relative;
+  word-break: break-all;
+}
+.nickname {
+  position: absolute;
+  top: -25px;
+  left: 0;
+  font-size: 1em;
+  color: #737373;
 }
 .left {
   background-color: #F9FAFC;

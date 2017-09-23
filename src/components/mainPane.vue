@@ -2,11 +2,11 @@
   <el-col :span="18" class="main-pane">
     <el-row class="tac member-box">
       <el-col :span="18">
-        <p class="member-name">{{ memberName }}<i class="el-icon-arrow-down el-icon--right"></i></p>
+        <p class="member-name">{{ memberName }}<i class="el-icon-arrow-down el-icon--right" v-if="!isPlayground"></i></p>
       </el-col>
     </el-row>
     <div class="content">
-      <dialog-box v-for="(value, index) in msg" :key="index" :message="value.message" :type="value.type"></dialog-box>
+      <dialog-box v-for="(value, index) in msg" :key="index" :message="value.message" :type="value.type" :isPlayground="isPlayground" :username="value.username"></dialog-box>
     </div>
     <el-row class="tac input-bar">
       <el-col :span="16">
@@ -21,11 +21,7 @@
 
 <script>
 import dialogBox from './dialogBox'
-import io from 'socket.io-client'
 import { Message } from 'element-ui'
-import config from '../../config/'
-
-const socket = io(`http://localhost:${config.server.port}/`)
 
 export default {
   name: 'main-pane',
@@ -34,7 +30,11 @@ export default {
   },
   computed: {
     memberName () {
-      return this.$route.params.name || JSON.parse(decodeURI(document.cookie).match(/(?:^| )userInfo=(.*?)(?:;|$)/)[1]).username
+      return this.$route.params.name || 
+        (/playground/.test(this.$route.path) ? 'playground' : JSON.parse(decodeURI(document.cookie).match(/(?:^| )userInfo=(.*?)(?:;|$)/)[1]).username)
+    },
+    isPlayground () {
+      return /playground/.test(this.$route.path)
     }
   },
   data () {
@@ -42,34 +42,34 @@ export default {
       input: '',
       msg: [],
       type: '',
-      boxCount: 0,
     }
   },
   methods: {
     send () {
       if(this.input) {
-        this.boxCount++;
         this.msg.push({
           message: this.input,
-          type: 'right'
+          type: 'right',
+          username: '',
         });
 
-        socket.emit('chat message', this.input);
+        this.socket.emit('chat message', this.input);
 
         this.input = '';
       } else {
         Message({
-          message: '你没有输入聊天信息哦',
+          message: '你没有输入聊天信息哦！',
           type: 'warning'
         });
       }
     },
   },
   mounted () {
-    socket.on('chat message', (data) => {
+    this.socket.on('chat message', (data) => {
       this.msg.push({
         message: data.msg,
-        type: 'left'
+        type: 'left',
+        username: data.username,
       })
     })
   },

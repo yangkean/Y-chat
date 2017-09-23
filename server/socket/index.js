@@ -3,7 +3,7 @@ module.exports = function(io) {
     console.log(`${io.engine.clientsCount} sockets connected...`);
     
     socket.on('chat message', (msg) => {
-      console.log(`${socket.id}: ${msg}`);
+      console.log(`${socket.username}: ${msg}`);
       
       socket.broadcast.emit('chat message', {
         username: socket.username,
@@ -13,6 +13,8 @@ module.exports = function(io) {
 
     socket.on('user login', (user) => {
       socket.username = user;
+
+      console.log(`${socket.username} has logged in`);
     });
 
     socket.on('disconnect', () => {
